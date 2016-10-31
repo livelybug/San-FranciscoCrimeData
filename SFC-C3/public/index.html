@@ -1,4 +1,4 @@
-<<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
 	<title>SFC Demo</title>
@@ -15,6 +15,20 @@
             background: linear-gradient(to left, #abbaab , #ffffff); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
         }
     </style>
+    
+    <script src="https://www.gstatic.com/firebasejs/3.5.2/firebase.js"></script>
+    <script>
+      // Initialize Firebase
+      var config = {
+        apiKey: "AIzaSyBBMUsN-4mfBTqwpRu11ibxHkVzvZ6WJos",
+        authDomain: "sfc-analysis.firebaseapp.com",
+        databaseURL: "https://sfc-analysis.firebaseio.com",
+        storageBucket: "sfc-analysis.appspot.com",
+        messagingSenderId: "1072764054408"
+      };
+      firebase.initializeApp(config);
+    </script>
+    
 </head>
 <body>
     

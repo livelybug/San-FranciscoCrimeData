@@ -5,6 +5,6 @@
  * Top 10 crime districts.
  * Top 4 crime districts per year.
 
- Employ Spark 2.0 dataset API, which is more stable and capable from 1.6 version.
+Employ Spark 2.0 dataset API, which is more stable and capable from 1.6 version.
  
- Compared with RDD API, the coding easier, provided the data manipulation is not too complex.
+Compared with RDD API, the coding is easier, provided the data manipulation is not too complex.

@@ -1,5 +1,4 @@
 
-//import SFC_Analyse.{getClass => _, _}
 import java.util
 
 import org.apache.spark._
@@ -17,6 +16,7 @@ object SFC_Analyse{
 
   import java.time.LocalDateTime
   import java.time.format.DateTimeFormatter
+
   case class CriRecord(year:Int, month:String, dayOfWeek:String, district:String)
 
   def mapper(line:Row): CriRecord = {

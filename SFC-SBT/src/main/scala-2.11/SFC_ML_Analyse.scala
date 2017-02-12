@@ -9,6 +9,20 @@ import org.apache.spark.ml.clustering.KMeans
   * Created by Burt on 10/26/2016.
   */
 
+/*
+According to elbow method, range of k [24, 27] for k-means
+|K value |Sum of Squared Errors (test)|Sum of Squared Errors (train)|
++--------+----------------------------+-----------------------------+
+|5       |292.1198873                 |289.3182656                  |
+|12      |106.6556848                 |108.9649217                  |
+|18      |66.23589011                 |77.17409504                  |
+|24      |48.5977221                  |53.57271452                  |
+|27      |44.42333798                 |46.78177471                  |
+|30      |37.51425966                 |48.08941391                  |
+|31      |37.87849240                 |40.43646681                  |
++--------+----------------------------+-----------------------------+
+ */
+
 object SFC_ML_Analyse{
 
   import java.time.LocalDateTime
@@ -16,16 +30,18 @@ object SFC_ML_Analyse{
 
   case class CriRecord(year:Int, month:String, dayOfWeek:String, district:String, x:Double, y:Double)
 
-  def mapper(line:Row): CriRecord = {
-    val dt =LocalDateTime.parse(line(1).toString, DateTimeFormatter.ofPattern("yyyy-MM-dd kk:mm:ss"))
+  def mapper(line:Row, trainFlag:Boolean): CriRecord = {
+    val colNums = {if(trainFlag) (0, 7, 8) else (1, 5, 6)}
+
+    val dt =LocalDateTime.parse(line(colNums._1).toString, DateTimeFormatter.ofPattern("yyyy-MM-dd kk:mm:ss"))
 
     CriRecord(
       dt.getYear,
       dt.getMonth.getDisplayName(java.time.format.TextStyle.SHORT, java.util.Locale.UK),
       dt.getDayOfWeek.getDisplayName(java.time.format.TextStyle.SHORT, java.util.Locale.UK),
       line(3).toString,
-      Try(line(5).toString.toDouble) getOrElse(0.0),
-      Try(line(6).toString.toDouble) getOrElse(0.0)
+      Try(line(colNums._2).toString.toDouble) getOrElse(0.0),
+      Try(line(colNums._3).toString.toDouble) getOrElse(0.0)
     )
   }
 
@@ -36,7 +52,7 @@ object SFC_ML_Analyse{
 
     val basePath = getClass.getResource(".").getPath
     val dirIn1 = "input/"
-    val fileInPath1 = basePath + dirIn1 + "test.csv"
+    val fileInPath1 = basePath + dirIn1 + "train.csv"
 
     val dirOut1 = "output/"
     // Delete files generated previously
@@ -47,7 +63,7 @@ object SFC_ML_Analyse{
       .builder
       .appName("SparkSQL")
       .master("local[*]")
-        .config("spark.network.timeout", "500s")
+      .config("spark.network.timeout", "600s")
       .getOrCreate()
 
     import spark.implicits._
@@ -64,7 +80,8 @@ object SFC_ML_Analyse{
 
     //val criDsInclude2015 = dfRows.map(mapper)
     //val criDs = criDsInclude2015.filter($"year" !== 2015).cache()
-    val criDs = dfRows.map(mapper)
+    val trainFlag = {if(fileInPath1.contains("train.csv")) true else false}
+    val criDs = dfRows.map(aRow => mapper(aRow, trainFlag))
     println("---------" + criDs.show(2))
 
     import org.apache.spark.sql.functions._
@@ -76,7 +93,7 @@ object SFC_ML_Analyse{
 
     val assembler = new VectorAssembler().setInputCols(Array("x", "y")).setOutputCol("features")
     val training_data = assembler.transform(feature_data_geo).select("features")
-    val kmeans = new KMeans().setK(12).setSeed(1L)
+    val kmeans = new KMeans().setK(27).setSeed(1L)
     val model = kmeans.fit(training_data)
     val WSSSE = model.computeCost(training_data)
     println(s"Within Set Sum of Squared Errors = $WSSSE")
